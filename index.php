@@ -1,3 +1,3 @@
-<?
-echo "Bitch";
+<?php
+echo phpinfo();
 ?>
