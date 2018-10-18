@@ -1,11 +1,6 @@
 <?php
 
-include 'dbi.php';
+echo '<h1>DATABASE</h1>';
+include 'customer.php';
 
-$conn = OpenCon();
- 
-echo "Connected Successfully";
- 
-CloseCon($conn);
- 
 ?>
