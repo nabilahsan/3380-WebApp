@@ -56,4 +56,30 @@ if ($check2 > 0) {
     }
     echo "</table>";
 }
+
+//Stored procedures
+//Ref: http://www.mysqltutorial.org/php-calling-mysql-stored-procedures/
+
+$sp1 = "CALL `getProductName`()";
+
+$result3 = mysqli_query($conn, $sp1);
+$check3 = mysqli_num_rows($result3);
+
+if ($check3 > 0) {
+    # code...
+    echo '<hr>';
+    echo '<h2>Result of Stored Procedure 1: Getting Product Names</h2>';
+    echo "<table border='1'>
+                <tr>
+                <th>Product Name</th>
+                </tr>";
+    while ($row = mysqli_fetch_array($result3)) {
+        # code...
+        echo '<tr>';
+        echo '<td>'.$row[p_name].'</td>';
+        echo '</tr>';
+    }
+    echo "</table>";
+}
+
 ?>
