@@ -386,3 +386,17 @@ SELECT P.p_name AS Name, P.p_finish AS Finish, SUM(OL.quantity) AS ProductSum
     FROM OrderLine OL, Product P
         WHERE OL.p_id = P.p_id
         GROUP BY OL.p_id, P.p_name, P.p_finish;        
+
+
+-- Procedure for MySQL
+-- Pulled directly from phpmyadmin
+
+DROP PROCEDURE `SaleToDate`; 
+CREATE DEFINER=`user2`@`localhost` 
+PROCEDURE `SaleToDate`() NOT DETERMINISTIC 
+NO SQL SQL SECURITY DEFINER 
+SELECT DISTINCT P.p_id AS ProductID, P.p_name AS ProductName, SUM(OL.quantity) AS QuantityOrdered 
+FROM Product P, OrderLine OL 
+WHERE OL.p_id = P.p_id 
+GROUP BY P.p_name, P.p_id 
+ORDER BY P.p_id
