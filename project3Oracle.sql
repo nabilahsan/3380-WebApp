@@ -175,6 +175,18 @@ CREATE OR REPLACE PROCEDURE ProductLineSale AS
                 WHERE P.p_standard_price >= 400;
     END ProductLineSale;
 /
+
+-- Output
+-- p_id                             p_name                          p_finish                        p_standard_price                    p_photo                         SalePrice
+-- 1                             	End Table                     	Cherry                        	175	1                             	table.jpg                     	148.75
+-- 2                             	Coffee Table                  	Natural Ash                   	200	2                             		                               170
+-- 3                             	Computer Desk                 	Natural Ash                   	375	2                             		                            318.75
+-- 4                             	Entertainment Center          	Natural Maple                 	650	3                                                            		585
+-- 5                             	Writers Desk                  	Cherry                        	325	1                                                         		276.25
+-- 6                             	8-Drawer Desk                 	White Ash                     	750	2                                                             		675
+-- 7                             	Dining Table                  	Natural Ash                   	800	2                                                            		720
+-- 8                             	Computer Desk                 	Walnut                        	250	3                                                            		212.5
+
 -- Question 2: Trigger
 -- TODO: Procedures ( CALL ProductLineSale(); ) cannot be called inside a trigger. Find a way?
 CREATE OR REPLACE TRIGGER StandardPriceUpdate
@@ -186,23 +198,40 @@ CREATE OR REPLACE TRIGGER StandardPriceUpdate
             END IF;
         END StandardPriceUpdate;
 /
-/*
+
 -- This should not add a new row to PriceUpdate table since the p_standard_price is already 175 originally
 UPDATE Product P
 	SET P.p_standard_price = 175
     	WHERE P.p_id = 1;
+
+-- p_id     pu_date         pu_old_price    pu_new_price
 
 -- This should add a new row to PriceUpdate table since the p_standard_price is not the same as new value originally
 UPDATE Product P
 	SET P.p_standard_price = 155
     	WHERE P.p_id = 1;
 
+-- p_id     pu_date         pu_old_price    pu_new_price
+-- 1        04-NOV-18	    175	            155
+
 -- This should add a multiple rows to PriceUpdate table since the p_standard_price is not the same for both Products originally
 UPDATE Product P
 	SET P.p_standard_price = 155
     	WHERE P.p_id = 2 OR P.p_id = 8;
+
+-- p_id         pu_date         pu_old_price    pu_new_price
+-- 1           04-NOV-18	        175	            155
+-- 2           04-NOV-18	        200	            155
+-- 8           04-NOV-18	        250	            155
+
+
 -- This test for decimal precision
 UPDATE Product P
 	SET P.p_standard_price = 125.52342
     	WHERE P.p_id = 3;
-*/
+
+-- p_id         pu_date         pu_old_price    pu_new_price
+-- 1           04-NOV-18	        175	            155
+-- 2           04-NOV-18	        200	            155
+-- 8           04-NOV-18	        250	            155
+-- 3           04-NOV-18	        375	            125.52
