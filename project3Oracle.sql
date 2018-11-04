@@ -1,19 +1,14 @@
--- This file contains the MySQL code
--- Project 3
-
--- Md Nabil Ahsan - E8
--- George Navarro - E7
-
--- Entering data into database
-DROP TABLE Customer;
-DROP TABLE Territory;
-DROP TABLE SalesPerson;
-DROP TABLE DoesBusinessIn;
-DROP TABLE ProductLine;
-DROP TABLE Product;
-DROP TABLE Orderr;
-DROP TABLE OrderLine;
-DROP TABLE PriceUpdate  ;
+DROP TABLE Customer CASCADE CONSTRAINTS;
+DROP TABLE Territory CASCADE CONSTRAINTS;
+DROP TABLE SalesPerson CASCADE CONSTRAINTS;
+DROP TABLE DoesBusinessIn CASCADE CONSTRAINTS;
+DROP TABLE ProductLine CASCADE CONSTRAINTS;
+DROP TABLE Product CASCADE CONSTRAINTS;
+DROP TABLE Orderr CASCADE CONSTRAINTS;
+DROP TABLE OrderLine CASCADE CONSTRAINTS;
+DROP TABLE PriceUpdate CASCADE CONSTRAINTS;
+DROP PROCEDURE ProductLineSale;
+DROP TRIGGER StandardPriceUpdate;
 
 -- Customers
 CREATE TABLE Customer (
@@ -27,7 +22,6 @@ CREATE TABLE Customer (
     c_username CHAR(30),
     c_password CHAR(30),
     PRIMARY KEY ( c_id ) );
-    
 INSERT INTO Customer VALUES ( 1, 'Contemporary Casuals', '1355 S Hines Blvd', 'Gainesville', 'FL', '32601-2871', NULL, NULL, NULL );
 INSERT INTO Customer VALUES ( 2, 'Value Furnitures', '15145 S.W. 17th St.', 'Plano', 'TX', '75094-7734', NULL, NULL, NULL );
 INSERT INTO Customer VALUES ( 3, 'Home Furnishings', '1900 Allard Ave', 'Albany', 'NY', '12209-1125', 'homefurnishings?@gmail.com', 'CUSTOMER1', 'CUSTOMER1#' );
@@ -48,7 +42,6 @@ CREATE TABLE Territory (
     t_id CHAR(30),
     t_name CHAR(30),
     PRIMARY KEY ( t_id ) );
-    
 INSERT INTO Territory VALUES ( 1, 'SouthEast' );
 INSERT INTO Territory VALUES ( 2, 'SouthWest' );
 INSERT INTO Territory VALUES ( 3, 'NorthEast' );
@@ -63,10 +56,9 @@ CREATE TABLE SalesPerson (
     sp_email CHAR(30),
     sp_username CHAR(30),
     sp_password CHAR(30),
-    t_id CHAR(30),
-    PRIMARY KEY ( t_id, sp_id ),
-    FOREIGN KEY ( t_id ) REFERENCES Territory (t_id));
-
+    t_id CHAR(30) NOT NULL,
+    PRIMARY KEY ( sp_id ),
+    FOREIGN KEY ( t_id ) REFERENCES Territory );
 INSERT INTO SalesPerson VALUES ( 1, 'Doug Henny', '8134445555', 'salesperson?@gmail.com', 'SALESPERSON', 'SALESPERSON#', 1 );
 INSERT INTO SalesPerson VALUES ( 2, 'Robert Lewis', '8139264006', '', '', '', 2 );
 INSERT INTO SalesPerson VALUES ( 3, 'William Strong', '5053821212', '', '', '', 3 );
@@ -78,9 +70,8 @@ CREATE TABLE DoesBusinessIn (
     c_id CHAR(30) NOT NULL,
     t_id CHAR(30) NOT NULL,
     PRIMARY KEY ( c_id, t_id ),
-    FOREIGN KEY ( c_id ) REFERENCES Customer(c_id),
-    FOREIGN KEY ( t_id ) REFERENCES Territory(t_id) );
-
+    FOREIGN KEY ( c_id ) REFERENCES Customer,
+    FOREIGN KEY ( t_id ) REFERENCES Territory );
 INSERT INTO DoesBusinessIn VALUES ( 1, 1 );
 INSERT INTO DoesBusinessIn VALUES ( 2, 2 );
 INSERT INTO DoesBusinessIn VALUES ( 3, 3 );
@@ -94,7 +85,6 @@ CREATE TABLE ProductLine (
     pl_id CHAR(30) NOT NULL,
     pl_name CHAR(30),
     PRIMARY KEY ( pl_id ) );
-
 INSERT INTO ProductLine VALUES ( 1, 'Cherry Tree' );
 INSERT INTO ProductLine VALUES ( 2, 'Scandinavia' );
 INSERT INTO ProductLine VALUES ( 3, 'Country Look' );
@@ -104,20 +94,20 @@ CREATE TABLE Product (
     p_id CHAR(30) NOT NULL,
     p_name CHAR(30),
     p_finish CHAR(30),
-    p_standard_price CHAR(30),
+    p_standard_price DECIMAL(6,2),
     pl_id CHAR(30),
     p_photo CHAR(30),
+    SalePrice DECIMAL(6,2),
     PRIMARY KEY ( p_id ),
-    FOREIGN KEY ( pl_id ) REFERENCES ProductLine(pl_id) );
-
-INSERT INTO Product VALUES ( 1, 'End Table', 'Cherry', 175, 1, 'table.jpg' );
-INSERT INTO Product VALUES ( 2, 'Coffee Table', 'Natural Ash', 200, 2, NULL );
-INSERT INTO Product VALUES ( 3, 'Computer Desk', 'Natural Ash', 375, 2, NULL );
-INSERT INTO Product VALUES ( 4, 'Entertainment Center', 'Natural Maple', 650, 3, NULL );
-INSERT INTO Product VALUES ( 5, 'Writers Desk', 'Cherry', 325, 1, NULL );
-INSERT INTO Product VALUES ( 6, '8-Drawer Desk', 'White Ash', 750, 2, NULL );
-INSERT INTO Product VALUES ( 7, 'Dining Table', 'Natural Ash', 800, 2, NULL );
-INSERT INTO Product VALUES ( 8, 'Computer Desk', 'Walnut', 250, 3, NULL );
+    FOREIGN KEY ( pl_id ) REFERENCES ProductLine );
+INSERT INTO Product VALUES ( 1, 'End Table', 'Cherry', 175, 1, 'table.jpg', NULL );
+INSERT INTO Product VALUES ( 2, 'Coffee Table', 'Natural Ash', 200, 2, NULL, NULL );
+INSERT INTO Product VALUES ( 3, 'Computer Desk', 'Natural Ash', 375, 2, NULL, NULL );
+INSERT INTO Product VALUES ( 4, 'Entertainment Center', 'Natural Maple', 650, 3, NULL, NULL );
+INSERT INTO Product VALUES ( 5, 'Writers Desk', 'Cherry', 325, 1, NULL, NULL );
+INSERT INTO Product VALUES ( 6, '8-Drawer Desk', 'White Ash', 750, 2, NULL, NULL );
+INSERT INTO Product VALUES ( 7, 'Dining Table', 'Natural Ash', 800, 2, NULL, NULL );
+INSERT INTO Product VALUES ( 8, 'Computer Desk', 'Walnut', 250, 3, NULL, NULL );
 
 -- Orderr
 CREATE TABLE Orderr (
@@ -125,29 +115,27 @@ CREATE TABLE Orderr (
     o_date DATE,
     c_id CHAR(30) NOT NULL, /* c_id is not a key, but has to reference a customer per Orderr */
     PRIMARY KEY ( o_id ),
-    FOREIGN KEY ( c_id ) REFERENCES Customer(c_id) );
-
-INSERT INTO Orderr VALUES ( 1001, '2016-8-21', 1 );
-INSERT INTO Orderr VALUES ( 1002, '2016-7-21', 8 );
-INSERT INTO Orderr VALUES ( 1003, '2016-8-22' , 15 );
-INSERT INTO Orderr VALUES ( 1004, '2016-10-22', 5 );
-INSERT INTO Orderr VALUES ( 1005, '2016-7-24', 3 );
-INSERT INTO Orderr VALUES ( 1006, '2016-10-24', 2 );
-INSERT INTO Orderr VALUES ( 1007, '2016-8-27', 5 );
-INSERT INTO Orderr VALUES ( 1008, '2016-10-30', 12 );
-INSERT INTO Orderr VALUES ( 1009, '2016-11-05', 4 );
-INSERT INTO Orderr VALUES ( 1010, '2016-11-05', 1 );
+    FOREIGN KEY ( c_id ) REFERENCES Customer );
+INSERT INTO Orderr VALUES ( 1001, '21/Aug/16', 1 );
+INSERT INTO Orderr VALUES ( 1002, '21/Jul/16', 8 );
+INSERT INTO Orderr VALUES ( 1003, '22/Aug/16', 15 );
+INSERT INTO Orderr VALUES ( 1004, '22/Oct/16', 5 );
+INSERT INTO Orderr VALUES ( 1005, '24/Jul/16', 3 );
+INSERT INTO Orderr VALUES ( 1006, '24/Oct/16', 2 );
+INSERT INTO Orderr VALUES ( 1007, '27/Aug/16', 5 );
+INSERT INTO Orderr VALUES ( 1008, '30/Oct/16', 12 );
+INSERT INTO Orderr VALUES ( 1009, '05/Nov/16', 4 );
+INSERT INTO Orderr VALUES ( 1010, '05/Nov/16', 1 );
 
 -- OrderLine
 CREATE TABLE OrderLine (
     o_id CHAR(30) NOT NULL,
     p_id CHAR(30) NOT NULL,
     quantity INTEGER,
-    sale_price FLOAT,
+    sale_price REAL,
     PRIMARY KEY ( o_id, p_id ),
-    FOREIGN KEY ( o_id ) REFERENCES Orderr(o_id),
-    FOREIGN KEY ( p_id ) REFERENCES Product(p_id) );
-
+    FOREIGN KEY ( o_id ) REFERENCES Orderr,
+    FOREIGN KEY ( p_id ) REFERENCES Product );
 INSERT INTO OrderLine VALUES ( 1001, 1, 2, NULL );
 INSERT INTO OrderLine VALUES ( 1001, 2, 2, NULL );
 INSERT INTO OrderLine VALUES ( 1001, 4, 1, NULL );
@@ -169,21 +157,52 @@ INSERT INTO OrderLine VALUES ( 1010, 8, 10, NULL );
 
 -- PriceUpdate
 CREATE TABLE PriceUpdate (
-    pu_id CHAR(30) NOT NULL,
-    pu_date DATETIME,
-    pu_old_price FLOAT,
-    pu_new_price FLOAT,
-    PRIMARY KEY ( pu_id ) );
+    p_id CHAR(30),
+    pu_date DATE,
+    pu_old_price DECIMAL(6,2),
+    pu_new_price DECIMAL(6,2),
+    PRIMARY KEY ( p_id, pu_date ),
+    FOREIGN KEY ( p_id ) REFERENCES Product );
 
--- Procedure for MySQL
--- Pulled directly from phpmyadmin
+-- Question 1: Simple Stored Procedure
+CREATE OR REPLACE PROCEDURE ProductLineSale AS
+    BEGIN
+        UPDATE Product P
+            SET SalePrice = (P.p_standard_price - P.p_standard_price * 0.15)
+                WHERE P.p_standard_price < 400;
+        UPDATE Product P
+            SET SalePrice = (P.p_standard_price - P.p_standard_price * 0.1)
+                WHERE P.p_standard_price >= 400;
+    END ProductLineSale;
+/
+-- Question 2: Trigger
+-- TODO: Procedures ( CALL ProductLineSale(); ) cannot be called inside a trigger. Find a way?
+CREATE OR REPLACE TRIGGER StandardPriceUpdate
+    BEFORE UPDATE ON Product
+    FOR EACH ROW
+        BEGIN
+            IF(:NEW.p_standard_price != :OLD.p_standard_price) THEN
+                INSERT INTO PriceUpdate VALUES ( :OLD.p_id, SYSDATE, :OLD.p_standard_price, :NEW.p_standard_price );
+            END IF;
+        END StandardPriceUpdate;
+/
+/*
+-- This should not add a new row to PriceUpdate table since the p_standard_price is already 175 originally
+UPDATE Product P
+	SET P.p_standard_price = 175
+    	WHERE P.p_id = 1;
 
-DROP PROCEDURE `SaleToDate`; 
-CREATE DEFINER=`user2`@`localhost` 
-PROCEDURE `SaleToDate`() NOT DETERMINISTIC 
-NO SQL SQL SECURITY DEFINER 
-SELECT DISTINCT P.p_id AS ProductID, P.p_name AS ProductName, SUM(OL.quantity) AS QuantityOrdered 
-FROM Product P, OrderLine OL 
-WHERE OL.p_id = P.p_id 
-GROUP BY P.p_name, P.p_id 
-ORDER BY P.p_id
+-- This should add a new row to PriceUpdate table since the p_standard_price is not the same as new value originally
+UPDATE Product P
+	SET P.p_standard_price = 155
+    	WHERE P.p_id = 1;
+
+-- This should add a multiple rows to PriceUpdate table since the p_standard_price is not the same for both Products originally
+UPDATE Product P
+	SET P.p_standard_price = 155
+    	WHERE P.p_id = 2 OR P.p_id = 8;
+-- This test for decimal precision
+UPDATE Product P
+	SET P.p_standard_price = 125.52342
+    	WHERE P.p_id = 3;
+*/
